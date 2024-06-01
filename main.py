@@ -5,33 +5,34 @@ import win32con
 import win32gui
 import os
 import sys
+from random import randint
 
 
 # Sprites block
 class RumbleMcShirmish(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.attack_animation = False
-        self.sprites = []
-        self.sprites.append(pygame.image.load("data/standing/1.png"))
-        self.sprites.append(pygame.image.load("data/standing/2.png"))
-        self.sprites.append(pygame.image.load("data/standing/3.png"))
-        self.sprites.append(pygame.image.load("data/standing/4.png"))
-        self.sprites.append(pygame.image.load("data/standing/5.png"))
-        self.sprites.append(pygame.image.load("data/standing/6.png"))
-        self.sprites.append(pygame.image.load("data/standing/7.png"))
-        self.sprites.append(pygame.image.load("data/standing/8.png"))
-        self.sprites.append(pygame.image.load("data/standing/9.png"))
-        self.sprites.append(pygame.image.load("data/standing/10.png"))
-        self.sprites.append(pygame.image.load("data/standing/11.png"))
-        self.sprites.append(pygame.image.load("data/standing/12.png"))
-        self.sprites.append(pygame.image.load("data/standing/13.png"))
-        self.sprites.append(pygame.image.load("data/standing/14.png"))
+        self.standing_animation = False
+        self.standing_sprites = []
+        self.standing_sprites.append(pygame.image.load("data/standing/1.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/2.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/3.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/4.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/5.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/6.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/7.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/8.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/9.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/10.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/11.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/12.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/13.png"))
+        self.standing_sprites.append(pygame.image.load("data/standing/14.png"))
         self.current_sprite = 0
-        self.image = self.sprites[self.current_sprite]
+        self.image = self.standing_sprites[self.current_sprite]
         
         self.rect = self.image.get_rect()
-        self.rect.topleft = [pos_x,pos_y]
+        self.rect.topleft = [pos_x, pos_y]
     
     def standing(self):
         self.standing_animation = True
@@ -39,11 +40,11 @@ class RumbleMcShirmish(pygame.sprite.Sprite):
     def update(self, speed):
         if self.standing_animation == True:
             self.current_sprite += speed
-            if int(self.current_sprite) >= len(self.sprites):
+            if int(self.current_sprite) >= len(self.standing_sprites):
                 self.current_sprite = 0
                 self.standing_animation = False
 
-        self.image = self.sprites[int(self.current_sprite)]
+        self.image = self.standing_sprites[int(self.current_sprite)]
 
 
 pygame.init()
@@ -61,7 +62,7 @@ taskbarHight = monitor_area[3] - work_area[3]
 
 # Window position
 monitor = pygame.math.Vector2(pygame.display.Info().current_w, pygame.display.Info().current_h)
-window_position = (monitor.x / 2, (monitor.y) - screen_height - taskbarHight)
+window_position = (randint(0, int(monitor.x - screen_width)), (monitor.y) - screen_height - taskbarHight)
 
 # Colors
 black = (0, 0, 0)
@@ -90,6 +91,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.K_RIGHT:
+                player.running_right()
     player.standing()
 
 	# Drawing
