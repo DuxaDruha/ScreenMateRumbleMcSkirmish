@@ -72,11 +72,13 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % window_position
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.NOFRAME)
 pygame.display.set_caption("ScreenMateRumbleMcSkirmish")
 
-# Code for window transparency
+# Code for window transparency and for top window
 hwnd = pygame.display.get_wm_info()["window"]
 win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
 win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(255, 0, 128), 0, win32con.LWA_COLORKEY)
+hwnd = win32gui.GetForegroundWindow()
+win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, int(window_position[0]), int(window_position[1]), 0, 0, win32con.SWP_NOSIZE)
 
 # Creating the sprites and groups
 moving_sprites = pygame.sprite.Group()
