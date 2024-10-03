@@ -67,7 +67,6 @@ class Rumble(object):
         if self.x > monitor.x:
             self.x = 0 - 152
             self.targetX -= monitor.x
-            self.moving = True
         else:
             if self.x < self.targetX:
                 self.x += self.speed
