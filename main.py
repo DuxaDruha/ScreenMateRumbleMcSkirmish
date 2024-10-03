@@ -5,15 +5,18 @@ import win32gui
 import os
 from scripts.load import appendAnimation
 import time
-from random import randint
+from random import randint, choice
 
 
 pygame.init()
 
 isLeft = False
+direction = 0
 
 class Rumble(object):
     def __init__(self, coorX, coorY):
+        global direction
+        
         self.x = coorX
         self.y = coorY
         self.targetX = self.x
@@ -48,8 +51,7 @@ class Rumble(object):
 
         
     def animation(self):
-        key = pygame.key.get_pressed()
-        if self.moving:
+        if self.moving and self.x != self.targetX:
             self.standing_animation = False
             self.running_animation = True
         else:
@@ -58,26 +60,41 @@ class Rumble(object):
         
 
     def handle_keys(self):
+        global direction
+        
         time1 = time.time()
         dist = randint(400, 700)
         if time1 - self.time0 >= randint(12, 30):
-            self.targetX = self.x + dist
+            direction = choice([-1, 1])
+            
+            self.targetX = self.x + dist * direction
             self.time0 = time1
         
-        if self.x > monitor.x:
-            self.x = 0 - 152
-            self.targetX -= monitor.x
+        if direction == 1:
+            if self.x > monitor.x:
+                self.x = 0 - 152
+                self.targetX -= monitor.x
+            else:
+                if self.x < self.targetX:
+                    self.x += self.speed
+                    self.moving = True
+                    if self.x > self.targetX:
+                        self.x = self.targetX
+                        self.moving = False
         else:
-            if self.x < self.targetX:
-                self.x += self.speed
-                self.moving = True
+            if self.x < 0 - 152:
+                self.x = monitor.x
+                self.targetX += monitor.x
+            else:
                 if self.x > self.targetX:
-                    self.x = self.targetX
-                    self.moving = False
-
+                    self.x -= self.speed
+                    self.moving = True
+                    if self.x < self.targetX:
+                        self.x = self.targetX
+                        self.moving = False
 
     def draw(self, surface, speed):
-        global isLeft
+        global isLeft, direction
         
         if self.standing_animation == True:
             self.current_standing_sprite += speed
@@ -93,10 +110,10 @@ class Rumble(object):
             self.image = self.running_sprites[int(self.current_running_sprite)]
 
         key = pygame.key.get_pressed()
-        if key[pygame.K_LEFT]:
+        if direction == -1:
             surface.blit(pygame.transform.flip(self.image, True, False), (self.x, self.y))
             isLeft = True
-        if key[pygame.K_RIGHT]:
+        if direction == 1:
             surface.blit(self.image, (self.x, self.y))
             isLeft = False
         elif isLeft:
