@@ -1,104 +1,148 @@
 import pygame
-import random
 import win32api
 import win32con
 import win32gui
 import os
-import sys
-from random import randint
-
-
-# Sprites block
-class RumbleMcShirmish(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__()
-        self.standing_animation = False
-        self.standing_sprites = []
-        self.standing_sprites.append(pygame.image.load("data/standing/1.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/2.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/3.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/4.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/5.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/6.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/7.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/8.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/9.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/10.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/11.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/12.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/13.png"))
-        self.standing_sprites.append(pygame.image.load("data/standing/14.png"))
-        self.current_sprite = 0
-        self.image = self.standing_sprites[self.current_sprite]
-        
-        self.rect = self.image.get_rect()
-        self.rect.topleft = [pos_x, pos_y]
-    
-    def standing(self):
-        self.standing_animation = True
-
-    def update(self, speed):
-        if self.standing_animation == True:
-            self.current_sprite += speed
-            if int(self.current_sprite) >= len(self.standing_sprites):
-                self.current_sprite = 0
-                self.standing_animation = False
-
-        self.image = self.standing_sprites[int(self.current_sprite)]
+from scripts.load import appendAnimation
 
 
 pygame.init()
-clock = pygame.time.Clock()
 
-# Sizes
-screen_width = 104
-screen_height = 120
+isLeft = False
+
+class Rumble(object):
+    def __init__(self, coorX, coorY):
+        self.x = coorX
+        self.y = coorY
+        
+        # АНИМАЦИЯ СТОЙКИ НАЧАЛО
+        self.standing_animation = False
+        
+        self.standing_sprites = []
+        appendAnimation(self.standing_sprites, "data/standing/", 14, '.png')
+        self.current_standing_sprite = 0
+        
+        self.image = self.standing_sprites[self.current_standing_sprite]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [self.x, self.y]
+        # АНИМАЦИЯ СТОЙКИ КОНЕЦ
+        
+        
+        # АНИМАЦИЯ БЕГА НАЧАЛО
+        self.running_animation = False
+        
+        self.running_sprites = []
+        appendAnimation(self.running_sprites, "data/running/", 8, '.gif')
+        self.current_running_sprite = 0
+        
+        self.image = self.running_sprites[self.current_running_sprite]
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [self.x, self.y]
+        # АНИМАЦИЯ БЕГА КОНЕЦ
+
+        
+    def animation(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_RIGHT]:
+            self.standing_animation = False
+            self.running_animation = True
+        elif key[pygame.K_LEFT]:
+            self.standing_animation = False
+            self.running_animation = True
+        else:
+            self.standing_animation = True
+        
+
+    def handle_keys(self):
+        key = pygame.key.get_pressed()
+        dist = 2.75
+        if key[pygame.K_RIGHT]:
+            if self.x <= monitor.x:
+                self.x += dist
+            else:
+                self.x = 0 - 152
+        elif key[pygame.K_LEFT]:
+            if self.x >= 0 - 152:
+                self.x -= dist
+            else:
+                self.x = monitor.x
+
+
+    def draw(self, surface, speed):
+        global isLeft
+        
+        if self.standing_animation == True:
+            self.current_standing_sprite += speed
+            if int(self.current_standing_sprite) >= len(self.standing_sprites):
+                self.current_standing_sprite = 0
+                # self.standing_animation = False
+            self.image = self.standing_sprites[int(self.current_standing_sprite)]
+        elif self.running_animation == True:
+            self.current_running_sprite += speed
+            if int(self.current_running_sprite) >= len(self.running_sprites):
+                self.current_running_sprite = 0
+                # self.running_animation = False
+            self.image = self.running_sprites[int(self.current_running_sprite)]
+
+        key = pygame.key.get_pressed()
+        if key[pygame.K_LEFT]:
+            surface.blit(pygame.transform.flip(self.image, True, False), (self.x, self.y))
+            isLeft = True
+        if key[pygame.K_RIGHT]:
+            surface.blit(self.image, (self.x, self.y))
+            isLeft = False
+        elif isLeft:
+            surface.blit(pygame.transform.flip(self.image, True, False), (self.x, self.y))
+        else:
+            surface.blit(self.image, (self.x, self.y))
+                
+
 
 # Taskbar hight
 monitor_info = win32api.GetMonitorInfo(win32api.MonitorFromPoint((0,0)))
 monitor_area = monitor_info.get("Monitor")
 work_area = monitor_info.get("Work")
 taskbarHight = monitor_area[3] - work_area[3]
+monitor = pygame.math.Vector2(pygame.display.Info().current_w, pygame.display.Info().current_h)
+
+# Sizes
+screen_width = monitor.x
+screen_height = 144
 
 # Window position
 monitor = pygame.math.Vector2(pygame.display.Info().current_w, pygame.display.Info().current_h)
-window_position = (randint(0, int(monitor.x - screen_width)), (monitor.y) - screen_height - taskbarHight)
-
-# Colors
-black = (0, 0, 0)
-white = (255, 255, 255)
-
-# Window
+window_position = (int(monitor.x - screen_width) / 2, (monitor.y) - screen_height - taskbarHight)
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % window_position
 screen = pygame.display.set_mode((screen_width, screen_height), pygame.NOFRAME)
+fuchsia = (255, 0, 128)  # Transparency color
+dark_red = (139, 0, 0)
 pygame.display.set_caption("ScreenMateRumbleMcSkirmish")
 
-# Code for window transparency and for top window
+
+# Create layered window
 hwnd = pygame.display.get_wm_info()["window"]
 win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
                        win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED)
-win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(255, 0, 128), 0, win32con.LWA_COLORKEY)
+# Set window transparency color
+win32gui.SetLayeredWindowAttributes(hwnd, win32api.RGB(*fuchsia), 0, win32con.LWA_COLORKEY)
 hwnd = win32gui.GetForegroundWindow()
 win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, int(window_position[0]), int(window_position[1]), 0, 0, win32con.SWP_NOSIZE)
 
-# Creating the sprites and groups
-moving_sprites = pygame.sprite.Group()
-player = RumbleMcShirmish(0, 0)
-moving_sprites.add(player)
 
-while True:
+rumble = Rumble(monitor.x / 2, 0)
+clock = pygame.time.Clock()
+running = True
+while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        elif event.type == pygame.KEYDOWN:
-            if event.type == pygame.K_RIGHT:
-                player.running_right()
-    player.standing()
+            running = False
 
-	# Drawing
-    screen.fill((255, 0, 128))
-    moving_sprites.draw(screen)
-    moving_sprites.update(0.25)
-    pygame.display.flip()
+    rumble.handle_keys()
+    rumble.animation()
+    
+
+    screen.fill(fuchsia)
+    rumble.draw(screen, 0.25)
+    pygame.display.update()
+
     clock.tick(60)
