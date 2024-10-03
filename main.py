@@ -4,6 +4,8 @@ import win32con
 import win32gui
 import os
 from scripts.load import appendAnimation
+import time
+from random import randint
 
 
 pygame.init()
@@ -14,6 +16,10 @@ class Rumble(object):
     def __init__(self, coorX, coorY):
         self.x = coorX
         self.y = coorY
+        self.targetX = self.x
+        self.time0 = time.time()
+        self.speed = 2.5
+        self.moving = False
         
         # АНИМАЦИЯ СТОЙКИ НАЧАЛО
         self.standing_animation = False
@@ -43,29 +49,32 @@ class Rumble(object):
         
     def animation(self):
         key = pygame.key.get_pressed()
-        if key[pygame.K_RIGHT]:
-            self.standing_animation = False
-            self.running_animation = True
-        elif key[pygame.K_LEFT]:
+        if self.moving:
             self.standing_animation = False
             self.running_animation = True
         else:
             self.standing_animation = True
+            self.running_animation = False
         
 
     def handle_keys(self):
-        key = pygame.key.get_pressed()
-        dist = 2.75
-        if key[pygame.K_RIGHT]:
-            if self.x <= monitor.x:
-                self.x += dist
-            else:
-                self.x = 0 - 152
-        elif key[pygame.K_LEFT]:
-            if self.x >= 0 - 152:
-                self.x -= dist
-            else:
-                self.x = monitor.x
+        time1 = time.time()
+        dist = randint(400, 700)
+        if time1 - self.time0 >= randint(12, 30):
+            self.targetX = self.x + dist
+            self.time0 = time1
+        
+        if self.x > monitor.x:
+            self.x = 0 - 152
+            self.targetX -= monitor.x
+            self.moving = True
+        else:
+            if self.x < self.targetX:
+                self.x += self.speed
+                self.moving = True
+                if self.x > self.targetX:
+                    self.x = self.targetX
+                    self.moving = False
 
 
     def draw(self, surface, speed):
@@ -129,7 +138,7 @@ hwnd = win32gui.GetForegroundWindow()
 win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, int(window_position[0]), int(window_position[1]), 0, 0, win32con.SWP_NOSIZE)
 
 
-rumble = Rumble(monitor.x / 2, 0)
+rumble = Rumble(randint(152, int(monitor.x) - 152), 0)
 clock = pygame.time.Clock()
 running = True
 while running:
