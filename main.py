@@ -128,7 +128,6 @@ monitor = pygame.math.Vector2(pygame.display.Info().current_w, pygame.display.In
 # Sizes
 screen_width = monitor.x
 screen_height = 144
-
 # Window position
 monitor = pygame.math.Vector2(pygame.display.Info().current_w, pygame.display.Info().current_h)
 window_position = (int(monitor.x - screen_width) / 2, (monitor.y) - screen_height - taskbarHight)
@@ -137,6 +136,9 @@ screen = pygame.display.set_mode((screen_width, screen_height), pygame.NOFRAME)
 fuchsia = (255, 0, 128)  # Transparency color
 dark_red = (139, 0, 0)
 pygame.display.set_caption("ScreenMateRumbleMcSkirmish")
+# set icon
+programIcon = pygame.image.load('data/imgs/logo.png')
+pygame.display.set_icon(programIcon)
 
 
 # Create layered window
